@@ -1,0 +1,290 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace Game_misil_Alien
+{
+    public partial class Form1 : Form
+    {
+
+    
+       
+     
+    
+
+
+
+
+
+
+
+
+
+
+
+        bool izquierda, derecha; // este booleano se usará para comprobar si el jugador puede moverse hacia la izquierda // este booleano se usará para comprobar si el jugador puede moverse hacia la derecha
+        int velocidad = 8;// esta es la velocidad predeterminada para que caigan los misiles
+        int puntaje = 0; // este es el valor de puntuación predeterminado
+        int perdidos = 0; // este es el valor perdido predeterminado
+
+        Random randX = new Random(); // esto se usará para generar una ubicación X aleatoria 
+        Random randY = new Random(); //esto se utilizará para generar una ubicación Y aleatoria 
+
+
+        PictureBox bomba = new PictureBox(); // crea un nuevo cuadro de imagen de presentación, esto se agregará dinámicamente 
+
+
+
+
+
+
+
+        public Form1()
+        {
+            InitializeComponent();
+
+            reinicia_el_juego(); // invoca la función de reinicio del juego
+
+
+
+
+        }
+
+        private void Principal_Juego(object sender, EventArgs e)
+        {
+
+            txtpuntos.Text = " misiles obtenidos: " + puntaje;  // muestra la puntuación en la etiqueta misiles capturados
+            txtperdidos.Text = " misiles perdidos: " + perdidos; // Muestra los errores en la etiqueta misiles perdidos
+
+            // si el booleano ir a la izquierda es verdadero Y los pilotos que quedan son mayores que 0
+
+            if (izquierda == true && piloto.Left > 0 )
+            {
+
+                // luego movemos el piloto 12 píxeles hacia la izquierda
+
+                piloto.Left -= 12;
+                //la imagen revisada cambiará a la que se mueve hacia la izquierda
+
+                piloto.Image = Properties.Resources.alien_normal2;
+
+            }
+
+            //si ir a la derecha es verdadero Y el ancho de los pilotos y la izquierda son menores que el ancho del formulario
+            // lo que significa que el piloto todavía está dentro del marco del juego
+
+            if (derecha == true && piloto.Left + piloto.Width < this.ClientSize.Width)
+            {
+                // mueve el piloto 12 píxeles a la derecha
+
+                piloto.Left += 12;
+
+                // cambia la imagen del piloto por la que se mueve hacia la derecha
+
+                piloto.Image = Properties.Resources.alien_normal;
+            }
+
+            //a continuación, el bucle for comprobará los huevos que caen desde arriba
+            // para cada Control llamamos X de esta forma
+
+            foreach ( Control x in this.Controls)
+            {
+                // si X es un tipo de cuadro de imagen Y tiene la etiqueta misiles
+
+
+                if (x is PictureBox && (string)x.Tag == "Misiles")
+                {
+                    // luego mueve X hacia abajo
+
+                    x.Top += velocidad;
+
+                    // si los MISILES [X] llegan al final de la pantalla
+
+
+                    if (x.Top + x.Height > this.ClientSize.Height)
+
+
+                    {
+                        // si el misil golpea el suelo entonces mostramos la imagen de bienvenida
+
+
+                        bomba.Image = Properties.Resources.firebomba__1_;
+                        bomba.Location = x.Location;
+                        bomba.Height = 80;
+                        bomba.Width = 80;
+
+                        bomba.BackColor = Color.Transparent;
+                        this.Controls.Add(bomba);
+
+
+                        x.Top = randY.Next(80, 300) * -1;
+                        x.Left = randX.Next(5, this.ClientSize.Width - x.Height);
+
+                        perdidos += 1;
+                        piloto.Image = Properties.Resources.alien_lastimado;
+                    }
+
+                    if(piloto.Bounds.IntersectsWith(x.Bounds))
+
+
+                    {
+
+                        x.Top = randY.Next(80, 300) * -1;
+                        x.Left = randX.Next(5, this.ClientSize.Width - x.Height);
+
+                        puntaje += 1;
+
+
+                    }
+
+
+
+
+
+                    }
+
+                }
+
+
+
+            // si el número faltante es mayor que 10
+            // necesitamos detener el juego
+            if (puntaje > 10)
+            {
+                velocidad = 12;  //aumentar la velocidad de los misiles a 20
+            }
+
+            // si el número faltante es mayor que 5
+            // necesitamos detener el juego
+            if ( perdidos > 5 )
+            {
+
+                Juego_Tiempo.Stop(); // detener el cronómetro del juego
+                // muestra el cuadro de mensaje para decir que el juego ha terminado.
+
+                MessageBox.Show(" Se te acabo el juego !!  Perdimos buenos misiles " + "\r\n" + "Haga click en Aceptar para reiniciar");
+                // una vez que los jugadores hacen clic en Aceptar reiniciamos el juego nuevamente
+
+                reinicia_el_juego();
+
+
+
+
+            }
+
+
+    
+
+        }
+
+        private void Tecla_abajo(object sender, KeyEventArgs e)
+        {
+
+            if(e.KeyCode == Keys.Left)
+            {
+                // si se presiona la tecla izquierda cambia el ir a la izquierda a verdadero
+
+                izquierda = true;
+            }
+
+            if(e.KeyCode == Keys.Right)
+            {
+                // si se presiona la tecla derecha cambia el ir a la derecha a verdadero
+
+                derecha = true; 
+
+            }
+
+
+
+        }
+
+
+
+
+
+
+        private void Tecla_arriba(object sender, KeyEventArgs e)
+        {
+
+            if (e.KeyCode == Keys.Left)
+            {
+                // si la tecla izquierda está arriba entonces cambia ir a la izquierda a falso
+
+
+                izquierda = false;
+            }
+
+            if (e.KeyCode == Keys.Right)
+            {
+
+                // si la tecla correcta está arriba entonces cambia el ir a la derecha a falso
+
+                derecha = false;
+
+            }
+
+
+
+        }
+
+
+
+
+
+        private void reinicia_el_juego()
+        {
+
+
+
+            foreach ( Control x in this.Controls)
+            {
+
+                if(x is PictureBox && (string)x.Tag == "Misiles")
+
+
+                {
+
+                    x.Top = randY.Next(80, 300) * -1;
+                    x.Left = randX.Next(5, this.ClientSize.Width - x.Width);
+
+
+                }
+
+
+
+
+            }
+
+
+            piloto.Left = this.ClientSize.Width / 2;
+            piloto.Image = Properties.Resources.alien_normal;
+
+
+            puntaje = 0;
+            perdidos = 0;
+            velocidad = 8;
+
+            izquierda = false;
+            derecha = false;
+
+            Juego_Tiempo.Start();
+
+
+
+        }
+
+
+
+
+
+
+
+    }
+}
